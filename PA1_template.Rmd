@@ -3,6 +3,11 @@
   
    
 ## Loading and preprocessing the data
+```{r opts, echo = FALSE}
+knitr::opts_chunk$set(
+  fig.path = "figures/"
+)
+```
 ```{r}
 setwd("D:/Users/ffruth/Documents/CourseraDataScienceSpecialization/R/class5")
 activity <- read.csv(file = "activity.csv", sep=",", header = TRUE)
@@ -59,7 +64,7 @@ b) Strategy for imputing missing data and creating a new data set "activity_impu
   
   
 Missing values (coded as "NA") are filled by filling in the mean of the respective 5-minute interval (calculated previously):  
-```{r hist_numbersteps_imputed}
+```{r}
 activity_imputed <- activity
 for(i in 1:nrow(activity_imputed)){
         j <- which(dailyact[,1]==activity_imputed[i,3])
@@ -68,9 +73,9 @@ for(i in 1:nrow(activity_imputed)){
 ```
 
 c) Histogram of the total number of steps taken each day after missing values are imputed
-```{r}
+```{r hist_numbersteps_imputed}
 numbersteps_imp <- tapply(activity_imputed$steps, activity_imputed$date, FUN = sum, na.rm=TRUE)
-hist(numbersteps_imp, breaks = 20, main = "Histogram of number of daily steps with imputed data set")
+hist(numbersteps_imp, breaks = 20, main = "Histogram of number of daily steps with imputed data set", xlab = "Number of steps")
 ```
   
 d) Calculation and report of mean and median total number of steps taken per day
@@ -95,7 +100,7 @@ activity_imputed$flag_weekend <- (weekdays(activity_imputed$date) %in% c("Samsta
 ```
   
 b) Plot containing a time series plot of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis).  
-```{r}
+```{r hist_activity_timeseries_daytype}
 subs <- subset(activity_imputed, activity_imputed$flag_weekend==TRUE)
 stepsperint <- tapply(subs$steps, subs$interval, FUN = mean, na.rm=TRUE)
 ints <- as.numeric(rownames(stepsperint))
