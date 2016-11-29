@@ -4,9 +4,7 @@
    
 ## Loading and preprocessing the data
 ```{r opts, echo = FALSE}
-knitr::opts_chunk$set(
-  fig.path = "figures/"
-)
+knitr::opts_chunk$set(fig.path = "figures/", echo = TRUE)
 ```
 ```{r}
 setwd("D:/Users/ffruth/Documents/CourseraDataScienceSpecialization/R/class5")
@@ -82,8 +80,8 @@ d) Calculation and report of mean and median total number of steps taken per day
 ```{r}
 meansteps_imp <- mean(numbersteps_imp)
 mediansteps_imp <- median(numbersteps_imp)
-paste0("The mean using impute data is equal to ", meansteps_imp)
-paste0("The median using impute data is equal to ", mediansteps_imp)
+paste0("The mean using impute data is equal to ", round(meansteps_imp))
+paste0("The median using impute data is equal to ", round(mediansteps_imp))
 ```
   
   
@@ -91,10 +89,10 @@ Do these values differ from the estimates from the first part of the assignment?
 Both the median and the mean increase, however, the median only increases only slightly.  
   
 What is the impact of imputing missing data on the estimates of the total daily number of steps?  
-The median is rather robust regarding imputing which can be expected. The most drastic effect is the reduction of small values.
+The median is rather robust regarding imputing which can be expected. The most drastic effect is that the frequency of small values is significantly reduced, i.e., days with a small number of steps due to missing data are now assigned to a higher number of steps.
 
 ## Are there differences in activity patterns between weekdays and weekends?  
-a) Creation of a new factor variable "flag_weekend" indicating whether the respective day belongs to the weekend or not. 
+a) Creation of a new factor variable "flag_weekend" indicating whether the respective day belongs to the weekend or not. Please note that "Samstag" and "Sonntag" are German words for "Saturday" and "Sunday" and are used here because the R system works with German standards.
 ```{r}
 activity_imputed$flag_weekend <- (weekdays(activity_imputed$date) %in% c("Samstag","Sonntag"))
 ```
