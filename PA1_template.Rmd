@@ -1,25 +1,124 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
-
-
+# RepData Peer Assessment 1
+  
+  
+   
 ## Loading and preprocessing the data
+```{r}
+setwd("D:/Users/ffruth/Documents/CourseraDataScienceSpecialization/R/class5")
+activity <- read.csv(file = "activity.csv", sep=",", header = TRUE)
 
-
-
-## What is mean total number of steps taken per day?
-
-
-
+library(lubridate)
+```
+  
+Convert the date column into a date format:
+```{r}
+activity[,"date"] <- ymd(activity[,"date"])
+```
+   
+  
+## What is mean total number of steps taken per day?  
+a) histogram of the total number of steps taken each day  
+```{r hist_numbersteps}
+numbersteps <- tapply(activity$steps, activity$date, FUN = sum, na.rm=TRUE)
+hist(numbersteps, breaks = 20, xlab = "Number of steps", main = "Histogram of total number of daily steps")
+```
+  
+b) Calculation and report of mean and median total number of steps taken per day:
+```{r}
+meansteps <- mean(numbersteps)
+mediansteps <- median(numbersteps)
+paste0("The mean is equal to ",meansteps)
+paste0("The median is equal to ",mediansteps)
+```
+  
+  
 ## What is the average daily activity pattern?
+a) time series plot of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
+```{r daily_activity_pattern}
+stepsperint <- tapply(activity$steps, activity$interval, FUN = mean, na.rm=TRUE)
+ints <- as.numeric(rownames(stepsperint))
+dailyact <- cbind(ints, stepsperint)
+colnames(dailyact) <- c("interval", "mean steps per interval")
+plot(dailyact,type = "l", main = "Daily activity pattern: Mean steps per interval")
+```
+  
+b) Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
+```{r}
+maxint <- which.max(dailyact[,2])
+dailyact[maxint,]
+```
+  
+  
+## Imputing missing values  
+a) Calculating the number of entries with NAs:
+```{r}
+length(which(is.na(activity$steps)))
+```
+ 
+b) Strategy for imputing missing data and creating a new data set "activity_imputed"  
+  
+  
+Missing values (coded as "NA") are filled by filling in the mean of the respective 5-minute interval (calculated previously):  
+```{r hist_numbersteps_imputed}
+activity_imputed <- activity
+for(i in 1:nrow(activity_imputed)){
+        j <- which(dailyact[,1]==activity_imputed[i,3])
+        if(is.na(activity_imputed$steps[i])) activity_imputed$steps[i] <- dailyact[j,2]
+} 
+```
+
+c) Histogram of the total number of steps taken each day after missing values are imputed
+```{r}
+numbersteps_imp <- tapply(activity_imputed$steps, activity_imputed$date, FUN = sum, na.rm=TRUE)
+hist(numbersteps_imp, breaks = 20, main = "Histogram of number of daily steps with imputed data set")
+```
+  
+d) Calculation and report of mean and median total number of steps taken per day
+```{r}
+meansteps_imp <- mean(numbersteps_imp)
+mediansteps_imp <- median(numbersteps_imp)
+paste0("The mean using impute data is equal to ", meansteps_imp)
+paste0("The median using impute data is equal to ", mediansteps_imp)
+```
+  
+  
+Do these values differ from the estimates from the first part of the assignment?  
+Both the median and the mean increase, however, the median only increases only slightly.  
+  
+What is the impact of imputing missing data on the estimates of the total daily number of steps?  
+The median is rather robust regarding imputing which can be expected. The most drastic effect is the reduction of small values.
+
+## Are there differences in activity patterns between weekdays and weekends?  
+a) Creation of a new factor variable "flag_weekend" indicating whether the respective day belongs to the weekend or not. 
+```{r}
+activity_imputed$flag_weekend <- (weekdays(activity_imputed$date) %in% c("Samstag","Sonntag"))
+```
+  
+b) Plot containing a time series plot of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis).  
+```{r}
+subs <- subset(activity_imputed, activity_imputed$flag_weekend==TRUE)
+stepsperint <- tapply(subs$steps, subs$interval, FUN = mean, na.rm=TRUE)
+ints <- as.numeric(rownames(stepsperint))
+temp1 <- cbind(ints, stepsperint,rep("weekend",length(ints)))
+
+subs <- subset(activity_imputed, activity_imputed$flag_weekend==FALSE)
+stepsperint <- tapply(subs$steps, subs$interval, FUN = mean, na.rm=TRUE)
+ints <- as.numeric(rownames(stepsperint))
+temp2 <- cbind(ints, stepsperint,rep("weekday",length(ints)))
+
+dailyact <- rbind(temp1, temp2)
+colnames(dailyact) <- c("interv", "numsteps", "daytype")
+
+dailyact <- as.data.frame(dailyact, warnings = FALSE)
+
+for(i in 1:2) dailyact[,i] <- as.numeric(as.character(dailyact[,i]))
+dailyact[,3] <- as.factor(as.character(dailyact[,3]))
 
 
+library(ggplot2)
+library(lattice)
+par(mfrow=c(1,1))
+xyplot(numsteps ~ interv | daytype, data = dailyact, layout = c(1, 2),type = c("l"),
+       ylab = "Number of steps", xlab = "Interval") 
+```
 
-## Imputing missing values
-
-
-
-## Are there differences in activity patterns between weekdays and weekends?
